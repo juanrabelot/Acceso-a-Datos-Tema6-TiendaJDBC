@@ -1,4 +1,4 @@
-
+import java.sql.ResultSet;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -17,6 +17,7 @@ public class TiendaJDBC {
 
                 crearTablas(con);
                 insertarProductos(con);
+                consultas(con);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -89,6 +90,92 @@ public class TiendaJDBC {
         );
 
         System.out.println("Productos insertados: " + total);
+    }
+    private static void mostrar(Connection con,
+                                String titulo,
+                                String sql) throws SQLException {
+
+        System.out.println(titulo);
+
+        Statement st = con.createStatement();
+
+        ResultSet rs = st.executeQuery(sql);
+
+        while (rs.next()) {
+
+            System.out.println(
+                    rs.getString("NOMBRE")
+                            + " | "
+                            + rs.getDouble("PRECIO")
+                            + " €"
+            );
+        }
+    }
+    private static void consultas(Connection con) throws SQLException {
+        mostrar(
+                con,
+                "Productos de mayor a menor precio",
+                """
+                SELECT NOMBRE, PRECIO
+                FROM PRODUCTO
+                ORDER BY PRECIO DESC
+                """
+        );
+        mostrar(
+                con,
+                "Periféricos por debajo de 50 euros",
+                """
+                SELECT NOMBRE, PRECIO
+                FROM PRODUCTO
+                WHERE CATEGORIA = 'Periféricos'
+                AND PRECIO < 50
+                ORDER BY NOMBRE
+                """
+        );
+
+        mostrar(
+                con,
+                "Productos que empiezan por Monitor",
+                """
+                SELECT NOMBRE, PRECIO
+                FROM PRODUCTO
+                WHERE NOMBRE LIKE 'Monitor%'
+                ORDER BY NOMBRE
+                """
+        );
+        mostrar(
+                con,
+                "Productos entre 50 y 200 euros",
+                """
+                SELECT NOMBRE, PRECIO
+                FROM PRODUCTO
+                WHERE PRECIO BETWEEN 50 AND 200
+                ORDER BY PRECIO
+                """
+        );
+        mostrar(
+                con,
+                "Monitores o portátiles con stock",
+                """
+                SELECT NOMBRE, PRECIO
+                FROM PRODUCTO
+                WHERE CATEGORIA IN ('Monitores', 'Portátiles')
+                AND STOCK > 0
+                ORDER BY NOMBRE
+                """
+        );
+        Statement st = con.createStatement();
+
+        ResultSet rs = st.executeQuery("""
+        SELECT COUNT(*) AS TOTAL
+        FROM PRODUCTO
+        WHERE STOCK = 0
+        """);
+
+        if (rs.next()) {
+            System.out.println("\nProductos agotados: ");
+            System.out.println("Total: " + rs.getInt("TOTAL"));
+        }
     }
 
 }
