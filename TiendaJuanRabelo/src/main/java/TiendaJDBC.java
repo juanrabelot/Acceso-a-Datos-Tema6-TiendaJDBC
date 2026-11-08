@@ -18,6 +18,7 @@ public class TiendaJDBC {
                 crearTablas(con);
                 insertarProductos(con);
                 consultas(con);
+                modificaciones(con);
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -176,6 +177,20 @@ public class TiendaJDBC {
             System.out.println("\nProductos agotados: ");
             System.out.println("Total: " + rs.getInt("TOTAL"));
         }
+    }
+    private static void modificaciones(Connection con) throws SQLException {
+        Statement st = con.createStatement();
+        int actualizados = st.executeUpdate("""
+        UPDATE PRODUCTO
+        SET PRECIO = ROUND(PRECIO * 1.10, 2)
+        WHERE CATEGORIA = 'Periféricos'
+        """);
+        System.out.println("Productos actualizados: " + actualizados);
+        int eliminados = st.executeUpdate("""
+        DELETE FROM PRODUCTO
+        WHERE STOCK = 0
+        """);
+        System.out.println("Productos eliminados: " + eliminados);
     }
 
 }
